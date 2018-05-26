@@ -1,8 +1,26 @@
 <r-svg>
-    <svg ref="svgbox" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <svg ref="svgbox" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onmousedown={createElement}>
         <yield></yield>
     </svg>
     <script>
+
+        createElement(e){
+            if(toolName === "r-rect"){
+                var tag = document.createElementNS("http://www.w3.org/2000/svg",'g');
+                this.refs.svgbox.appendChild(tag);
+                riot.mount(tag, "r-rect", { 
+                    _parent : this,
+                    "data-is" : this,
+                    x: e.x  - this.root.offsetLeft,
+                    y: e.y  - this.root.offsetTop,
+                    width: 100,
+                    height: 100,
+                    draggable : true,
+                    resizable: true
+                });
+                this.root.addEventListener("mouseup", () => {toolName = "";} );
+            }
+        }
         
     </script>
 </r-svg>

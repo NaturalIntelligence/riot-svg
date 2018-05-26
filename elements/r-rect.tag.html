@@ -34,6 +34,7 @@
 
     <script>
         var tag = this;
+        tag.getParent = () => tag.parent || opts._parent;
         tag.diffX = 0;
         tag.diffY = 0;
         tag.dragStart = false;
@@ -55,8 +56,8 @@
         tag.updatePosition = updatePosition;
         tag.setStartPosition = setStartPosition;
         tag.setResizeHandlersPosition = setResizeHandlersPosition;
-        tag.draggable = opts.draggable === "true";
-        tag.resizable = opts.resizable === "true";
+        tag.draggable = (opts.draggable || opts.draggable === "true");
+        tag.resizable = ( opts.resizable || opts.resizable === "true");
 
         tag.on("mount", function(e) {
             tag.refs.rect.setAttribute("x", opts.x);
@@ -66,6 +67,7 @@
             opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
             opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
             tag.setResizeHandlersPosition();
+
         })
 
         function setResizeHandlersPosition(){
@@ -114,21 +116,24 @@
             }
             if(tag.resizable){
                 dragHandler = tag[e.target.dataset.handler];
-                tag.parent.root.addEventListener("mousemove", tag[e.target.dataset.handler] );
-                tag.parent.root.addEventListener("mouseup", release);
+                tag.getParent().root.addEventListener("mousemove", tag[e.target.dataset.handler] );
+                tag.getParent().root.addEventListener("mouseup", release);
 
+                e.stopPropagation();
                 /* e.target.addEventListener("mousemove", tag[e.target.dataset.handler] );
                 e.target.addEventListener("mouseup", release); */
             }
         }
+
+        
 
         tag.se = function (cursor) {//change width & height both
             var x = tag.initialState.x;
             var y = tag.initialState.y;
 
             var cursorOffset = {
-                x: cursor.x - tag.parent.root.offsetLeft,
-                y: cursor.y - tag.parent.root.offsetTop
+                x: cursor.x - tag.getParent().root.offsetLeft,
+                y: cursor.y - tag.getParent().root.offsetTop
             }
             if (cursorOffset.x < x) { 
                 x = cursorOffset.x; 
@@ -196,9 +201,10 @@
             if(tag.draggable){
                 dragHandler = drag;
 
-                tag.parent.root.addEventListener("mousemove", drag);
-                tag.parent.root.addEventListener("mouseup", release);
+                tag.getParent().root.addEventListener("mousemove", drag);
+                tag.getParent().root.addEventListener("mouseup", release);
 
+                e.stopPropagation();
                 /* e.target.addEventListener("mousemove", drag);
                 e.target.addEventListener("mouseup", release); */
             }
@@ -212,8 +218,8 @@
             e.target.removeEventListener("mousemove", dragHandler);
             e.target.removeEventListener("mouseup", release);
 
-            tag.parent.root.removeEventListener("mousemove", dragHandler);
-            tag.parent.root.removeEventListener("mouseup", release);
+            tag.getParent().root.removeEventListener("mousemove", dragHandler);
+            tag.getParent().root.removeEventListener("mouseup", release);
         }
 
         /*

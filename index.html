@@ -10,6 +10,7 @@
         </style>
     </head>
     <body>
+        <button onclick="javascript:setTool('r-rect')">Create</button>
         <r-svg  >
         <!-- <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> -->
             <!-- <g data-is="riot-rect" x="10" y="10" w="256" h="64" rx="5" ry="5" draggable="true" ></g> -->
@@ -24,6 +25,10 @@
         <script src="js/elements.js"></script>
         <script>
             riot.mount("*");
+            var toolName = "";
+            function setTool(name){
+                toolName = name;
+            }
         </script>
     </body>
 </html>
