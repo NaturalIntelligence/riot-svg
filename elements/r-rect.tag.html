@@ -108,8 +108,11 @@
             }
             if(tag.resizable){
                 dragHandler = tag[e.target.dataset.handler];
-                e.target.addEventListener("mousemove", tag[e.target.dataset.handler] );
-                e.target.addEventListener("mouseup", release);
+                tag.parent.root.addEventListener("mousemove", tag[e.target.dataset.handler] );
+                tag.parent.root.addEventListener("mouseup", release);
+
+                /* e.target.addEventListener("mousemove", tag[e.target.dataset.handler] );
+                e.target.addEventListener("mouseup", release); */
             }
         }
 
@@ -128,20 +131,6 @@
             });
         }
 
-        /* function resize(cursor){
-            var x = tag.initialState.x;
-            var y = tag.initialState.y;
-
-            if (cursor.x < x) { x = cursor.x; }
-            if (cursor.y < y) { y = cursor.y; } 
-
-            updateState(tag.refs.rect,{
-                x: x,
-                y: y,
-                w: Math.abs(cursor.x - tag.initialState.x) ,
-                h: Math.abs(cursor.y - tag.initialState.y) ,
-            });
-        } */
 
         function updateState(el, state){
             tag.x =  state.x;
@@ -175,8 +164,8 @@
 
             /* cursor.target.setAttributeNS(null,"x", tag.x);
             cursor.target.setAttributeNS(null,"y", tag.y); */
-            cursor.target.setAttribute("x", tag.x);
-            cursor.target.setAttribute("y", tag.y);
+            tag.refs.rect.setAttribute("x", tag.x);
+            tag.refs.rect.setAttribute("y", tag.y);
 
             tag.setResizeHandlersPosition();
             
@@ -192,8 +181,12 @@
             tag.setStartPosition(e);
             if(tag.draggable){
                 dragHandler = drag;
-                e.target.addEventListener("mousemove", drag);
-                e.target.addEventListener("mouseup", release);
+
+                tag.parent.root.addEventListener("mousemove", drag);
+                tag.parent.root.addEventListener("mouseup", release);
+
+                /* e.target.addEventListener("mousemove", drag);
+                e.target.addEventListener("mouseup", release); */
             }
         }
 
@@ -203,7 +196,10 @@
 
         function release(e){
             e.target.removeEventListener("mousemove", dragHandler);
-            e.target.removeEventListener("mouseup", release);;
+            e.target.removeEventListener("mouseup", release);
+
+            tag.parent.root.removeEventListener("mousemove", dragHandler);
+            tag.parent.root.removeEventListener("mouseup", release);
         }
 
         /*

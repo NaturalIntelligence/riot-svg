@@ -91,8 +91,9 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             }
             if(tag.resizable){
                 dragHandler = tag[e.target.dataset.handler];
-                e.target.addEventListener("mousemove", tag[e.target.dataset.handler] );
-                e.target.addEventListener("mouseup", release);
+                tag.parent.root.addEventListener("mousemove", tag[e.target.dataset.handler] );
+                tag.parent.root.addEventListener("mouseup", release);
+
             }
         }
 
@@ -129,8 +130,8 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             tag.x = (cursor.x - tag.diffX);
             tag.y = (cursor.y - tag.diffY);
 
-            cursor.target.setAttribute("x", tag.x);
-            cursor.target.setAttribute("y", tag.y);
+            tag.refs.rect.setAttribute("x", tag.x);
+            tag.refs.rect.setAttribute("y", tag.y);
 
             tag.setResizeHandlersPosition();
 
@@ -145,8 +146,10 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             tag.setStartPosition(e);
             if(tag.draggable){
                 dragHandler = drag;
-                e.target.addEventListener("mousemove", drag);
-                e.target.addEventListener("mouseup", release);
+
+                tag.parent.root.addEventListener("mousemove", drag);
+                tag.parent.root.addEventListener("mouseup", release);
+
             }
         }
 
@@ -156,9 +159,12 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
 
         function release(e){
             e.target.removeEventListener("mousemove", dragHandler);
-            e.target.removeEventListener("mouseup", release);;
+            e.target.removeEventListener("mouseup", release);
+
+            tag.parent.root.removeEventListener("mousemove", dragHandler);
+            tag.parent.root.removeEventListener("mouseup", release);
         }
 
 });
-riot.tag2('r-svg', '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <yield></yield> </svg>', '', '', function(opts) {
+riot.tag2('r-svg', '<svg ref="svgbox" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <yield></yield> </svg>', '', '', function(opts) {
 });
