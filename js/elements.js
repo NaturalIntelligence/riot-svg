@@ -28,11 +28,13 @@ riot.tag2('rold-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
             tag.release = release;
             tag.x= Number.parseInt(opts.x);
             tag.y= Number.parseInt(opts.y);
+            tag._name= opts.name;
             tag.updatePosition = updatePosition;
             tag.setStartPosition = setStartPosition;
 
             tag.on("mount", function(e) {
                 console.log(tag)
+                console.log(tag._name)
                 tag.refs.rect.setAttribute("x", opts.x);
                 tag.refs.rect.setAttribute("y", opts.y);
                 tag.refs.rect.setAttribute("width", opts.width);
@@ -65,6 +67,7 @@ riot.tag2('rold-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
             }
 
             function drag(e){
+                console.log(tag._name);
                 tag.updatePosition(e);
             }
 
@@ -76,7 +79,7 @@ riot.tag2('rold-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
 riot.tag2('r-svg', '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <yield></yield> </svg>', '', '', function(opts) {
 });
 riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', function(opts) {
-        tag = this;
+        var tag = this;
         tag.diffX = 0;
         tag.diffY = 0;
         tag.dragStart = false;
@@ -85,11 +88,11 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', fun
         tag.release = release;
         tag.x= Number.parseInt(opts.x);
         tag.y= Number.parseInt(opts.y);
+        tag._name= opts.name;
         tag.updatePosition = updatePosition;
         tag.setStartPosition = setStartPosition;
 
         tag.on("mount", function(e) {
-            console.log(tag)
             tag.refs.rect.setAttribute("x", opts.x);
             tag.refs.rect.setAttribute("y", opts.y);
             tag.refs.rect.setAttribute("width", opts.width);

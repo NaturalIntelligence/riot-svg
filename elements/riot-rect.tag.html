@@ -1,8 +1,8 @@
 <r-rect>
-    <rect ref="rect" onmousedown={hold}   />
+    <rect ref="rect" onmousedown = {hold}/>
 
     <script>
-        tag = this;
+        var tag = this;
         tag.diffX = 0;
         tag.diffY = 0;
         tag.dragStart = false;
@@ -11,11 +11,11 @@
         tag.release = release;
         tag.x= Number.parseInt(opts.x);
         tag.y= Number.parseInt(opts.y);
+        tag._name= opts.name;
         tag.updatePosition = updatePosition;
         tag.setStartPosition = setStartPosition;
 
         tag.on("mount", function(e) {
-            console.log(tag)
             tag.refs.rect.setAttribute("x", opts.x);
             tag.refs.rect.setAttribute("y", opts.y);
             tag.refs.rect.setAttribute("width", opts.width);
@@ -29,8 +29,11 @@
             tag.x = (cursor.x - tag.diffX);
             tag.y = (cursor.y - tag.diffY);
 
+            /* cursor.target.setAttributeNS(null,"x", tag.x);
+            cursor.target.setAttributeNS(null,"y", tag.y); */
             cursor.target.setAttribute("x", tag.x);
             cursor.target.setAttribute("y", tag.y);
+            
             //tag.update(); //it is required when there is any change in DOM element
         }
 
