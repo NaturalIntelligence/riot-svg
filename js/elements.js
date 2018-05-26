@@ -28,13 +28,11 @@ riot.tag2('rold-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
             tag.release = release;
             tag.x= Number.parseInt(opts.x);
             tag.y= Number.parseInt(opts.y);
-            tag._name= opts.name;
             tag.updatePosition = updatePosition;
             tag.setStartPosition = setStartPosition;
 
             tag.on("mount", function(e) {
                 console.log(tag)
-                console.log(tag._name)
                 tag.refs.rect.setAttribute("x", opts.x);
                 tag.refs.rect.setAttribute("y", opts.y);
                 tag.refs.rect.setAttribute("width", opts.width);
@@ -67,7 +65,6 @@ riot.tag2('rold-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
             }
 
             function drag(e){
-                console.log(tag._name);
                 tag.updatePosition(e);
             }
 
@@ -78,7 +75,7 @@ riot.tag2('rold-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
 });
 riot.tag2('r-svg', '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <yield></yield> </svg>', '', '', function(opts) {
 });
-riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', function(opts) {
+riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; }', '', function(opts) {
         var tag = this;
         tag.diffX = 0;
         tag.diffY = 0;
@@ -91,6 +88,7 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', fun
         tag._name= opts.name;
         tag.updatePosition = updatePosition;
         tag.setStartPosition = setStartPosition;
+        tag.draggable = opts.draggable === "true";
 
         tag.on("mount", function(e) {
             tag.refs.rect.setAttribute("x", opts.x);
@@ -99,6 +97,7 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', fun
             tag.refs.rect.setAttribute("height", opts.height);
             opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
             opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
+
         })
 
         function updatePosition(cursor){
@@ -117,7 +116,7 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', fun
         }
 
         function hold(e){
-            if(opts.draggable === "true"){
+            if(tag.draggable){
                 tag.setStartPosition(e);
                 e.target.addEventListener("mousemove", drag);
                 e.target.addEventListener("mouseup", release);

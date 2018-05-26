@@ -1,5 +1,10 @@
 <r-rect>
-    <rect ref="rect" onmousedown = {hold}/>
+    <style>
+        .draggable{
+            cursor: move;
+        }
+    </style>
+    <rect ref="rect" onmousedown = {hold} class={draggable: draggable}/>
 
     <script>
         var tag = this;
@@ -14,6 +19,7 @@
         tag._name= opts.name;
         tag.updatePosition = updatePosition;
         tag.setStartPosition = setStartPosition;
+        tag.draggable = opts.draggable === "true";
 
         tag.on("mount", function(e) {
             tag.refs.rect.setAttribute("x", opts.x);
@@ -22,6 +28,7 @@
             tag.refs.rect.setAttribute("height", opts.height);
             opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
             opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
+            
         })
 
         function updatePosition(cursor){
@@ -43,7 +50,7 @@
         }
 
         function hold(e){
-            if(opts.draggable === "true"){
+            if(tag.draggable){
                 tag.setStartPosition(e);
                 e.target.addEventListener("mousemove", drag);
                 e.target.addEventListener("mouseup", release);
