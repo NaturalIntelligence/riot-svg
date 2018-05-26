@@ -75,7 +75,7 @@ riot.tag2('rold-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
 });
 riot.tag2('r-svg', '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <yield></yield> </svg>', '', '', function(opts) {
 });
-riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; }', '', function(opts) {
+riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect> <g if="{resizable}" class="resize-handlers"> <circle class="resize-handler nw" ref="nw"></circle> <circle class="resize-handler n" ref="n"></circle> <circle class="resize-handler ne" ref="ne"></circle> <circle class="resize-handler w" ref="w"></circle> <circle class="resize-handler e" ref="e"></circle> <circle class="resize-handler sw" ref="sw"></circle> <circle class="resize-handler s" ref="s"></circle> <circle class="resize-handler se" ref="se"></circle> </g>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; } r-rect .resize-handler,[data-is="r-rect"] .resize-handler{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5 } r-rect .ne,[data-is="r-rect"] .ne{ cursor: nesw-resize} r-rect .n,[data-is="r-rect"] .n{ cursor: row-resize} r-rect .nw,[data-is="r-rect"] .nw{ cursor: nwse-resize} r-rect .e,[data-is="r-rect"] .e{ cursor: col-resize} r-rect .w,[data-is="r-rect"] .w{ cursor: col-resize} r-rect .se,[data-is="r-rect"] .se{ cursor: nwse-resize} r-rect .s,[data-is="r-rect"] .s{ cursor: row-resize} r-rect .sw,[data-is="r-rect"] .sw{ cursor: nesw-resize}', '', function(opts) {
         var tag = this;
         tag.diffX = 0;
         tag.diffY = 0;
@@ -85,20 +85,54 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         tag.release = release;
         tag.x= Number.parseInt(opts.x);
         tag.y= Number.parseInt(opts.y);
+        tag.w= Number.parseInt(opts.width);
+        tag.h= Number.parseInt(opts.height);
         tag._name= opts.name;
         tag.updatePosition = updatePosition;
         tag.setStartPosition = setStartPosition;
+        tag.setResizeHandlersPosition = setResizeHandlersPosition;
         tag.draggable = opts.draggable === "true";
+        tag.resizable = opts.resizable === "true";
 
         tag.on("mount", function(e) {
             tag.refs.rect.setAttribute("x", opts.x);
             tag.refs.rect.setAttribute("y", opts.y);
-            tag.refs.rect.setAttribute("width", opts.width);
-            tag.refs.rect.setAttribute("height", opts.height);
+            tag.refs.rect.setAttribute("width", tag.w);
+            tag.refs.rect.setAttribute("height", tag.h);
             opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
             opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
-
+            tag.setResizeHandlersPosition();
         })
+
+        function setResizeHandlersPosition(){
+            if(tag.resizable){
+
+                tag.refs.ne.setAttribute("cx", tag.x + tag.w);
+                tag.refs.ne.setAttribute("cy", tag.y);
+
+                tag.refs.e.setAttribute("cx", tag.x + tag.w);
+                tag.refs.e.setAttribute("cy", tag.y + tag.h /2);
+
+                tag.refs.se.setAttribute("cx", tag.x + tag.w);
+                tag.refs.se.setAttribute("cy", tag.y + tag.h);
+
+                tag.refs.n.setAttribute("cx", tag.x + tag.w / 2);
+                tag.refs.n.setAttribute("cy", tag.y);
+
+                tag.refs.s.setAttribute("cx", tag.x + tag.w / 2);
+                tag.refs.s.setAttribute("cy", tag.y + tag.h);
+
+                tag.refs.nw.setAttribute("cx", tag.x);
+                tag.refs.nw.setAttribute("cy", tag.y);
+
+                tag.refs.w.setAttribute("cx", tag.x);
+                tag.refs.w.setAttribute("cy", tag.y + tag.h /2);
+
+                tag.refs.sw.setAttribute("cx", tag.x);
+                tag.refs.sw.setAttribute("cy", tag.y + tag.h);
+
+            }
+        }
 
         function updatePosition(cursor){
 
@@ -107,6 +141,8 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
 
             cursor.target.setAttribute("x", tag.x);
             cursor.target.setAttribute("y", tag.y);
+
+            tag.setResizeHandlersPosition();
 
         }
 
@@ -131,4 +167,5 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             e.target.removeEventListener("mousemove", drag);
             e.target.removeEventListener("mouseup", release);;
         }
+
 });
