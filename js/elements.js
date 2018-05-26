@@ -18,7 +18,7 @@ riot.tag2('r-path', '<path riot-d="{getPath()}" fill="rgba(100,200,200,0.2)" str
                                 z`
         }
 });
-riot.tag2('riot-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', function(opts) {
+riot.tag2('rold-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', function(opts) {
             tag = this;
             tag.diffX = 0;
             tag.diffY = 0;
@@ -31,21 +31,23 @@ riot.tag2('riot-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
             tag.updatePosition = updatePosition;
             tag.setStartPosition = setStartPosition;
 
-            tag.on("mount", () => {
-                tag.refs.rect.setAttribute("x", tag.x);
-                tag.refs.rect.setAttribute("y", tag.y);
-                tag.refs.rect.setAttribute("width", opts.w);
-                tag.refs.rect.setAttribute("height", opts.h);
-                tag.refs.rect.setAttribute("rx", opts.rx);
-                tag.refs.rect.setAttribute("ry", opts.ry);
+            tag.on("mount", function(e) {
+                console.log(tag)
+                tag.refs.rect.setAttribute("x", opts.x);
+                tag.refs.rect.setAttribute("y", opts.y);
+                tag.refs.rect.setAttribute("width", opts.width);
+                tag.refs.rect.setAttribute("height", opts.height);
+                opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
+                opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
             })
 
             function updatePosition(cursor){
-                tag.x = (cursor.x - tag.diffX);
-                tag.y = (cursor.y - tag.diffY);
 
-                tag.refs.rect.setAttribute("x", tag.x);
-                tag.refs.rect.setAttribute("y", tag.y);
+                var x = (cursor.x - tag.diffX);
+                var y = (cursor.y - tag.diffY);
+
+                cursor.target.setAttribute("x", x);
+                cursor.target.setAttribute("y", y);
 
             }
 
@@ -70,4 +72,61 @@ riot.tag2('riot-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', 
                 e.target.removeEventListener("mousemove", drag);
                 e.target.removeEventListener("mouseup", release);;
             }
+});
+riot.tag2('r-svg', '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <yield></yield> </svg>', '', '', function(opts) {
+});
+riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}"></rect>', '', '', function(opts) {
+        tag = this;
+        tag.diffX = 0;
+        tag.diffY = 0;
+        tag.dragStart = false;
+        tag.hold = hold;
+        tag.drag = drag;
+        tag.release = release;
+        tag.x= Number.parseInt(opts.x);
+        tag.y= Number.parseInt(opts.y);
+        tag.updatePosition = updatePosition;
+        tag.setStartPosition = setStartPosition;
+
+        tag.on("mount", function(e) {
+            console.log(tag)
+            tag.refs.rect.setAttribute("x", opts.x);
+            tag.refs.rect.setAttribute("y", opts.y);
+            tag.refs.rect.setAttribute("width", opts.width);
+            tag.refs.rect.setAttribute("height", opts.height);
+            opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
+            opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
+        })
+
+        function updatePosition(cursor){
+
+            tag.x = (cursor.x - tag.diffX);
+            tag.y = (cursor.y - tag.diffY);
+
+            cursor.target.setAttribute("x", tag.x);
+            cursor.target.setAttribute("y", tag.y);
+
+        }
+
+        function setStartPosition(cursor){
+            tag.diffX = cursor.x - tag.x;
+            tag.diffY = cursor.y - tag.y;
+        }
+
+        function hold(e){
+            if(opts.draggable === "true"){
+                tag.setStartPosition(e);
+                e.target.addEventListener("mousemove", drag);
+                e.target.addEventListener("mouseup", release);
+            }
+        }
+
+        function drag(e){
+            tag.updatePosition(e);
+        }
+
+        function release(e){
+            e.target.removeEventListener("mousemove", drag);
+            e.target.removeEventListener("mouseup", release);;
+        }
 });

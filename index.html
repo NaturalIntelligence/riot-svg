@@ -9,10 +9,12 @@
         </style>
     </head>
     <body>
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
-            <g data-is="riot-rect" x="10" y="10" w="256" h="64" rx="5" ry="5" draggable="true" ></g>
-            <g data-is="riot-rect" x="15" y="80" w="156" h="84" ></g>
-        </svg>
+        <r-svg  >
+            <!-- <g data-is="riot-rect" x="10" y="10" w="256" h="64" rx="5" ry="5" draggable="true" ></g> -->
+            <rect x="10" y="10" width="256" height="64" rx="5" ry="5" draggable="true" fill="red"></rect>
+            <g data-is="r-rect" x="30" y="230" width="256" height="64" rx="5" ry="5" draggable="true" fill="green"></g>
+            <g data-is="r-rect" x="10" y="110" width="256" height="64" rx="5" ry="5" draggable="true" fill="blue"></g>
+        </r-svg>
 
         <script src="js/external/riot.min.js"></script>
         <script src="js/elements.js"></script>

@@ -1,4 +1,4 @@
-<riot-rect>
+<rold-rect>
         <rect ref="rect" onmousedown={hold}   />
 
         <script>
@@ -14,21 +14,26 @@
             tag.updatePosition = updatePosition;
             tag.setStartPosition = setStartPosition;
 
-            tag.on("mount", () => {
-                tag.refs.rect.setAttribute("x", tag.x);
-                tag.refs.rect.setAttribute("y", tag.y);
-                tag.refs.rect.setAttribute("width", opts.w);
-                tag.refs.rect.setAttribute("height", opts.h);
-                tag.refs.rect.setAttribute("rx", opts.rx);
-                tag.refs.rect.setAttribute("ry", opts.ry);
+            tag.on("mount", function(e) {
+                console.log(tag)
+                tag.refs.rect.setAttribute("x", opts.x);
+                tag.refs.rect.setAttribute("y", opts.y);
+                tag.refs.rect.setAttribute("width", opts.width);
+                tag.refs.rect.setAttribute("height", opts.height);
+                opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
+                opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
             })
 
             function updatePosition(cursor){
-                tag.x = (cursor.x - tag.diffX);
-                tag.y = (cursor.y - tag.diffY);
+                //TODO: if keepWithIn is set then check if it is going out of container.
+                var x = (cursor.x - tag.diffX);
+                var y = (cursor.y - tag.diffY);
 
-                tag.refs.rect.setAttribute("x", tag.x);
-                tag.refs.rect.setAttribute("y", tag.y);
+                /* tag.refs.rect.setAttribute("x", tag.x);
+                tag.refs.rect.setAttribute("y", tag.y); */
+                //console.log(x,y)
+                cursor.target.setAttribute("x", x);
+                cursor.target.setAttribute("y", y);
                 //tag.update(); //it is required when there is any change in DOM element
             }
 
@@ -55,4 +60,4 @@
             }
         </script>
 
-</riot-rect>
+</rold-rect>
