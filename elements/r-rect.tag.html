@@ -1,0 +1,58 @@
+<riot-rect>
+        <rect ref="rect" onmousedown={hold}   />
+
+        <script>
+            tag = this;
+            tag.diffX = 0;
+            tag.diffY = 0;
+            tag.dragStart = false;
+            tag.hold = hold;
+            tag.drag = drag;
+            tag.release = release;
+            tag.x= Number.parseInt(opts.x);
+            tag.y= Number.parseInt(opts.y);
+            tag.updatePosition = updatePosition;
+            tag.setStartPosition = setStartPosition;
+
+            tag.on("mount", () => {
+                tag.refs.rect.setAttribute("x", tag.x);
+                tag.refs.rect.setAttribute("y", tag.y);
+                tag.refs.rect.setAttribute("width", opts.w);
+                tag.refs.rect.setAttribute("height", opts.h);
+                tag.refs.rect.setAttribute("rx", opts.rx);
+                tag.refs.rect.setAttribute("ry", opts.ry);
+            })
+
+            function updatePosition(cursor){
+                tag.x = (cursor.x - tag.diffX);
+                tag.y = (cursor.y - tag.diffY);
+
+                tag.refs.rect.setAttribute("x", tag.x);
+                tag.refs.rect.setAttribute("y", tag.y);
+                //tag.update(); //it is required when there is any change in DOM element
+            }
+
+            function setStartPosition(cursor){
+                tag.diffX = cursor.x - tag.x;
+                tag.diffY = cursor.y - tag.y;
+            }
+
+            function hold(e){
+                if(opts.draggable === "true"){
+                    tag.setStartPosition(e);
+                    e.target.addEventListener("mousemove", drag);
+                    e.target.addEventListener("mouseup", release);
+                }
+            }
+
+            function drag(e){
+                tag.updatePosition(e);
+            }
+
+            function release(e){
+                e.target.removeEventListener("mousemove", drag);
+                e.target.removeEventListener("mouseup", release);;
+            }
+        </script>
+
+</riot-rect>

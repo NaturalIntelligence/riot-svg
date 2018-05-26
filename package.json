@@ -1,0 +1,18 @@
+{
+  "name": "riot-svg",
+  "version": "1.0.0",
+  "description": "riot based svg library",
+  "main": "index.js",
+  "scripts": {
+    "compile": "riot -w elements/ js/elements.js --ext html"
+  },
+  "keywords": [
+    "riot",
+    "svg"
+  ],
+  "author": "Amit Gupta",
+  "license": "MIT",
+  "dependencies": {
+    "riot": "^3.10.1"
+  }
+}
