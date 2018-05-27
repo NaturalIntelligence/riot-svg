@@ -55,7 +55,9 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
                     }
                     tag.myParentNode = tag.myParent.root;
                 }else{
-
+                    if(tag.myParent.tagName === "g"){
+                        tag.myParent = tag.myParent.nearestViewportElement;
+                    }
                     tag.offset = tag.myParent.getBoundingClientRect();
                     tag.myParentNode = tag.myParent;
                 }
