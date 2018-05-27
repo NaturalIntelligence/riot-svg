@@ -32,7 +32,7 @@
         tag.release = release;
 
         tag.initialState = {};
-        tag.holdTheHandler = holdTheHandler;
+        /* tag.holdTheHandler = holdTheHandler; */
         //tag.resize = resize;
 
         tag.selectRect = selectRect;
@@ -124,7 +124,25 @@
 
         var dragHandler;
 
-        function holdTheHandler(e){
+        tag.moveStart = ( knotName) =>{
+            tag.initialState = { //in case of polygon you save initial state of connecting lines only
+                x : tag.x,
+                y : tag.y,
+                w : tag.w,
+                h : tag.h
+            };
+            dragHandler = tag[knotName];
+        }
+
+        tag.move = ( cursor ) =>{
+            dragHandler && dragHandler(cursor);
+        }
+
+        tag.moveStop = ( cursor ) => {
+            //doNothing
+        }
+
+        /* function holdTheHandler(e){
             tag.initialState = {
                 x : tag.x,
                 y : tag.y,
@@ -138,10 +156,8 @@
                 tag.myParentNode.addEventListener("mouseup", release);
 
                 e.stopPropagation();
-                /* e.target.addEventListener("mousemove", tag[e.target.dataset.handler] );
-                e.target.addEventListener("mouseup", release); */
             }
-        }
+        } */
 
         
 
@@ -180,7 +196,7 @@
             el.setAttribute("y", state.y);
             el.setAttribute("width", state.w);
             el.setAttribute("height", state.h);
-            tag.setResizeHandlersPosition();
+            //tag.setResizeHandlersPosition();
         }
 
         function updatePosition(cursor){
@@ -196,12 +212,12 @@
             tag.refs.rect.setAttribute("x", tag.x);
             tag.refs.rect.setAttribute("y", tag.y);
 
-            tag.refs.knots.move(diff);//update initial position with this difference
+            tag.refs.knots.shift(diff);//update initial position with this difference
 
             //tag.update(); //it is required when there is any change in DOM element
         }
 
-        function setStartPosition(cursor){
+        function setStartPosition(e){
             tag.beforeStart = {
                 x: tag.x,
                 y: tag.y
@@ -213,7 +229,7 @@
         }
 
         function hold(e){
-            tag.refs.knots.startMove();//clone initial position of all the points
+            tag.refs.knots.startShift();//save initial position of all the points
             tag.setStartPosition(e);
 
             if(tag.draggable){

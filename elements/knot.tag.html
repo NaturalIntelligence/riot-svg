@@ -11,61 +11,88 @@
         }
     </style>
 
-    <circle ref={ keyName } class="knot-style" each={ point,keyName in parent.points } riot-cx={ point.x } riot-cy={ point.y } data-handler={ keyName }></circle>
+    <circle ref={ keyName } class="knot-style" each={ point,keyName in parent.points } riot-cx={ point.x } riot-cy={ point.y } data-handler={ keyName } onmousedown={ pullStart }></circle>
 
     <script>
+        var tag = this;
+        var polygon = tag.parent;
         var svgBox,offset;
+
         this.updateKnot = updateKnot;
-        this.move = move;
-        this.startMove = startMove;
+        this.shift = shift;
+        this.startShift = startShift;
+
+        this.pullStart = pullStart;
+        this.pull = pull;
+        this.pullStop = pullStop;
         
-        function updateKnot(knotName, newXY){
-            this.refs[knotName].setAttribute("cx", newXY.x);
-            this.refs[knotName].setAttribute("cy", newXY.y);
-        }
-
-        
-        function move( diffXY){
-            
-            var keys = Object.keys(this.parent.points);
-            for(var i=0; i<keys.length; i++){
-                var point = this.parent.points[ keys[i] ];
-                point.x = this.initialState[  keys[i] ].x + diffXY.x;
-                point.y = this.initialState[  keys[i] ].y + diffXY.y;
-            }
-
-            this.update();
-        }
-
-        function startMove(){
-            this.initialState = JSON.parse(JSON.stringify( this.parent.points ));
-        }
-
         this.on("mount", function() {
             //this.root.firstChild //svg wrapper
             //this.root.nearestViewportElement //parent SVG not the topmost
             /* this.refs.knot.setAttribute("cx", opts.x);
             this.refs.knot.setAttribute("cy", opts.y); */
 
-            /* svgbox = this.parent.root.nearestViewportElement
-            offset = svgbox.getBoundingClientRect();
-            svgbox.addEventListener("mousedown", pullStart ); */
+            if(this.parent && this.parent.root.nearestViewportElement){
+                svgbox = this.parent.root.nearestViewportElement;
+                if(!svgbox){
+                    console.log(this.parent);
+                }
+                offset = svgbox.getBoundingClientRect();
+                //svgbox.addEventListener("mousedown", pullStart );
+            }
 
         })
 
-        function pullStart(e){
+        function updateKnot(knotName, newXY){
+            tag.refs[knotName].setAttribute("cx", newXY.x);
+            tag.refs[knotName].setAttribute("cy", newXY.y);
+        }
 
+        /**
+         * Shift all the knots as per the difference from the initial state
+        */
+        function shift( diffXY){
+            var keys = Object.keys(this.parent.points);
+            for(var i=0; i<keys.length; i++){
+                var point = this.parent.points[ keys[i] ];
+                point.x = this.initialState[  keys[i] ].x + diffXY.x;
+                point.y = this.initialState[  keys[i] ].y + diffXY.y;
+            }
+            this.update();
+        }
+
+        function startShift(){
+            this.initialState = clone( this.parent.points );
+        }
+
+        var knotInitialState;
+        var selectedKnotId;
+
+        function pullStart(e){
+            selectedKnotId = e.target.dataset.handler;
+            knotInitialState = clone( polygon.points[ selectedKnotId ] );
+            polygon.moveStart( selectedKnotId );
             svgbox.addEventListener("mousemove", pull );
             svgbox.addEventListener("mouseup", pullStop );
         }
 
         function pull(e){
-
+            polygon.move(e);
+            updateKnot(selectedKnotId, {
+                x: e.x - offset.x,
+                y: e.y - offset.y
+            })
         }
 
-        function pull(stop){
+        function pullStop(e){
+            polygon.moveStop();
             svgbox.removeEventListener("mousemove", pull );
             svgbox.removeEventListener("mouseup", pullStop );
+        }
+
+
+        function clone(obj){
+            return JSON.parse(JSON.stringify( obj ));
         }
     </script>
 </knot>

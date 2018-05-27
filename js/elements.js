@@ -1,47 +1,75 @@
-riot.tag2('knot', '<circle ref="{keyName}" class="knot-style" each="{point,keyName in parent.points}" riot-cx="{point.x}" riot-cy="{point.y}" data-handler="{keyName}"></circle>', 'knot .knot-style,[data-is="knot"] .knot-style{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; cursor: pointer; }', '', function(opts) {
+riot.tag2('knot', '<circle ref="{keyName}" class="knot-style" each="{point,keyName in parent.points}" riot-cx="{point.x}" riot-cy="{point.y}" data-handler="{keyName}" onmousedown="{pullStart}"></circle>', 'knot .knot-style,[data-is="knot"] .knot-style{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; cursor: pointer; }', '', function(opts) {
+        var tag = this;
+        var polygon = tag.parent;
         var svgBox,offset;
+
         this.updateKnot = updateKnot;
-        this.move = move;
-        this.startMove = startMove;
+        this.shift = shift;
+        this.startShift = startShift;
+
+        this.pullStart = pullStart;
+        this.pull = pull;
+        this.pullStop = pullStop;
+
+        this.on("mount", function() {
+
+            if(this.parent && this.parent.root.nearestViewportElement){
+                svgbox = this.parent.root.nearestViewportElement;
+                if(!svgbox){
+                    console.log(this.parent);
+                }
+                offset = svgbox.getBoundingClientRect();
+
+            }
+
+        })
 
         function updateKnot(knotName, newXY){
-            this.refs[knotName].setAttribute("cx", newXY.x);
-            this.refs[knotName].setAttribute("cy", newXY.y);
+            tag.refs[knotName].setAttribute("cx", newXY.x);
+            tag.refs[knotName].setAttribute("cy", newXY.y);
         }
 
-        function move( diffXY){
-
+        function shift( diffXY){
             var keys = Object.keys(this.parent.points);
             for(var i=0; i<keys.length; i++){
                 var point = this.parent.points[ keys[i] ];
                 point.x = this.initialState[  keys[i] ].x + diffXY.x;
                 point.y = this.initialState[  keys[i] ].y + diffXY.y;
             }
-
             this.update();
         }
 
-        function startMove(){
-            this.initialState = JSON.parse(JSON.stringify( this.parent.points ));
+        function startShift(){
+            this.initialState = clone( this.parent.points );
         }
 
-        this.on("mount", function() {
-
-        })
+        var knotInitialState;
+        var selectedKnotId;
 
         function pullStart(e){
-
+            selectedKnotId = e.target.dataset.handler;
+            knotInitialState = clone( polygon.points[ selectedKnotId ] );
+            polygon.moveStart( selectedKnotId );
             svgbox.addEventListener("mousemove", pull );
             svgbox.addEventListener("mouseup", pullStop );
         }
 
         function pull(e){
-
+            polygon.move(e);
+            updateKnot(selectedKnotId, {
+                x: e.x - offset.x,
+                y: e.y - offset.y
+            })
         }
 
-        function pull(stop){
+        function pullStop(e){
+            polygon.moveStop();
             svgbox.removeEventListener("mousemove", pull );
             svgbox.removeEventListener("mouseup", pullStop );
+        }
+
+        function clone(obj){
+            return JSON.parse(JSON.stringify( obj ));
         }
 });
 riot.tag2('r-path', '<path riot-d="{getPath()}" fill="rgba(100,200,200,0.2)" stroke="black"></path>', '', '', function(opts) {
@@ -75,7 +103,6 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         tag.release = release;
 
         tag.initialState = {};
-        tag.holdTheHandler = holdTheHandler;
 
         tag.selectRect = selectRect;
 
@@ -152,22 +179,22 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
 
         var dragHandler;
 
-        function holdTheHandler(e){
+        tag.moveStart = ( knotName) =>{
             tag.initialState = {
                 x : tag.x,
                 y : tag.y,
                 w : tag.w,
                 h : tag.h
-            }
-            if(tag.resizable){
-                dragHandler = tag[e.target.dataset.handler];
+            };
+            dragHandler = tag[knotName];
+        }
 
-                tag.myParentNode.addEventListener("mousemove", tag[e.target.dataset.handler] );
-                tag.myParentNode.addEventListener("mouseup", release);
+        tag.move = ( cursor ) =>{
+            dragHandler && dragHandler(cursor);
+        }
 
-                e.stopPropagation();
+        tag.moveStop = ( cursor ) => {
 
-            }
         }
 
         tag.se = function (cursor) {
@@ -203,7 +230,7 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             el.setAttribute("y", state.y);
             el.setAttribute("width", state.w);
             el.setAttribute("height", state.h);
-            tag.setResizeHandlersPosition();
+
         }
 
         function updatePosition(cursor){
@@ -219,11 +246,11 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             tag.refs.rect.setAttribute("x", tag.x);
             tag.refs.rect.setAttribute("y", tag.y);
 
-            tag.refs.knots.move(diff);
+            tag.refs.knots.shift(diff);
 
         }
 
-        function setStartPosition(cursor){
+        function setStartPosition(e){
             tag.beforeStart = {
                 x: tag.x,
                 y: tag.y
@@ -235,7 +262,7 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         }
 
         function hold(e){
-            tag.refs.knots.startMove();
+            tag.refs.knots.startShift();
             tag.setStartPosition(e);
 
             if(tag.draggable){
