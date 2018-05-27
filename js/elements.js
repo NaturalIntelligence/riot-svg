@@ -18,7 +18,7 @@ riot.tag2('r-path', '<path riot-d="{getPath()}" fill="rgba(100,200,200,0.2)" str
                                 z`
         }
 });
-riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect> <g if="{resizable}" class="resize-handlers hide"> <circle class="resize-handler nw" ref="nw" data-handler="nw" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler n" ref="n" data-handler="n" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler ne" ref="ne" data-handler="ne" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler w" ref="w" data-handler="w" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler e" ref="e" data-handler="e" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler sw" ref="sw" data-handler="sw" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler s" ref="s" data-handler="s" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler se" ref="se" data-handler="se" onmousedown="{holdTheHandler}"></circle> </g>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; } r-rect .resize-handler,[data-is="r-rect"] .resize-handler{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; } r-rect .ne,[data-is="r-rect"] .ne{ cursor: nesw-resize} r-rect .n,[data-is="r-rect"] .n{ cursor: row-resize} r-rect .nw,[data-is="r-rect"] .nw{ cursor: nwse-resize} r-rect .e,[data-is="r-rect"] .e{ cursor: col-resize} r-rect .w,[data-is="r-rect"] .w{ cursor: col-resize} r-rect .se,[data-is="r-rect"] .se{ cursor: nwse-resize} r-rect .s,[data-is="r-rect"] .s{ cursor: row-resize} r-rect .sw,[data-is="r-rect"] .sw{ cursor: nesw-resize}', '', function(opts) {
+riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect> <g if="{resizable}" class="resize-handlers hide"> <circle class="resize-handler" ref="nw" data-handler="nw" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler" ref="ne" data-handler="ne" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler" ref="sw" data-handler="sw" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler" ref="se" data-handler="se" onmousedown="{holdTheHandler}"></circle> </g>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; } r-rect .resize-handler,[data-is="r-rect"] .resize-handler{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; cursor: pointer; }', '', function(opts) {
         var tag = this;
         tag.myParent = tag.parent || opts._parent;
         tag.diffX = 0;
@@ -78,23 +78,11 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
                 tag.refs.ne.setAttribute("cx", tag.x + tag.w);
                 tag.refs.ne.setAttribute("cy", tag.y);
 
-                tag.refs.e.setAttribute("cx", tag.x + tag.w);
-                tag.refs.e.setAttribute("cy", tag.y + tag.h /2);
-
                 tag.refs.se.setAttribute("cx", tag.x + tag.w);
                 tag.refs.se.setAttribute("cy", tag.y + tag.h);
 
-                tag.refs.n.setAttribute("cx", tag.x + tag.w / 2);
-                tag.refs.n.setAttribute("cy", tag.y);
-
-                tag.refs.s.setAttribute("cx", tag.x + tag.w / 2);
-                tag.refs.s.setAttribute("cy", tag.y + tag.h);
-
                 tag.refs.nw.setAttribute("cx", tag.x);
                 tag.refs.nw.setAttribute("cy", tag.y);
-
-                tag.refs.w.setAttribute("cx", tag.x);
-                tag.refs.w.setAttribute("cy", tag.y + tag.h /2);
 
                 tag.refs.sw.setAttribute("cx", tag.x);
                 tag.refs.sw.setAttribute("cy", tag.y + tag.h);
