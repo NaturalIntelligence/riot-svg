@@ -15,11 +15,7 @@ riot.tag2('knot', '<circle ref="{keyName}" class="knot-style" each="{point,keyNa
 
             if(this.parent && this.parent.root.nearestViewportElement){
                 svgbox = this.parent.root.nearestViewportElement;
-                if(!svgbox){
-                    console.log(this.parent);
-                }
                 offset = svgbox.getBoundingClientRect();
-
             }
 
         })
@@ -230,7 +226,6 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             el.setAttribute("y", state.y);
             el.setAttribute("width", state.w);
             el.setAttribute("height", state.h);
-
         }
 
         function updatePosition(cursor){
@@ -246,7 +241,9 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             tag.refs.rect.setAttribute("x", tag.x);
             tag.refs.rect.setAttribute("y", tag.y);
 
-            tag.refs.knots.shift(diff);
+            if(tag.resizable){
+                tag.refs.knots.shift(diff);
+            }
 
         }
 
@@ -262,7 +259,9 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         }
 
         function hold(e){
-            tag.refs.knots.startShift();
+            if(tag.resizable){
+                tag.refs.knots.startShift();
+            }
             tag.setStartPosition(e);
 
             if(tag.draggable){

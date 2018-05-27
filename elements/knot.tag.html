@@ -29,16 +29,10 @@
         this.on("mount", function() {
             //this.root.firstChild //svg wrapper
             //this.root.nearestViewportElement //parent SVG not the topmost
-            /* this.refs.knot.setAttribute("cx", opts.x);
-            this.refs.knot.setAttribute("cy", opts.y); */
 
             if(this.parent && this.parent.root.nearestViewportElement){
                 svgbox = this.parent.root.nearestViewportElement;
-                if(!svgbox){
-                    console.log(this.parent);
-                }
                 offset = svgbox.getBoundingClientRect();
-                //svgbox.addEventListener("mousedown", pullStart );
             }
 
         })

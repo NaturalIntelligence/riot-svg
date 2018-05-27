@@ -101,20 +101,6 @@
 
                 tag.refs.knots.update();
                 
-                
-                /* //East
-                tag.refs.ne.setAttribute("cx", tag.x + tag.w);
-                tag.refs.ne.setAttribute("cy", tag.y);
-                
-                tag.refs.se.setAttribute("cx", tag.x + tag.w);
-                tag.refs.se.setAttribute("cy", tag.y + tag.h);
-                
-                //West
-                tag.refs.nw.setAttribute("cx", tag.x);
-                tag.refs.nw.setAttribute("cy", tag.y);
-                
-                tag.refs.sw.setAttribute("cx", tag.x);
-                tag.refs.sw.setAttribute("cy", tag.y + tag.h); */
             }
         }
 
@@ -141,25 +127,6 @@
         tag.moveStop = ( cursor ) => {
             //doNothing
         }
-
-        /* function holdTheHandler(e){
-            tag.initialState = {
-                x : tag.x,
-                y : tag.y,
-                w : tag.w,
-                h : tag.h
-            }
-            if(tag.resizable){
-                dragHandler = tag[e.target.dataset.handler];
-                
-                tag.myParentNode.addEventListener("mousemove", tag[e.target.dataset.handler] );
-                tag.myParentNode.addEventListener("mouseup", release);
-
-                e.stopPropagation();
-            }
-        } */
-
-        
 
         tag.se = function (cursor) {//change width & height both
             var x = tag.initialState.x;
@@ -196,7 +163,6 @@
             el.setAttribute("y", state.y);
             el.setAttribute("width", state.w);
             el.setAttribute("height", state.h);
-            //tag.setResizeHandlersPosition();
         }
 
         function updatePosition(cursor){
@@ -212,8 +178,9 @@
             tag.refs.rect.setAttribute("x", tag.x);
             tag.refs.rect.setAttribute("y", tag.y);
 
-            tag.refs.knots.shift(diff);//update initial position with this difference
-
+            if(tag.resizable){
+                tag.refs.knots.shift(diff);//update initial position with this difference
+            }
             //tag.update(); //it is required when there is any change in DOM element
         }
 
@@ -229,7 +196,9 @@
         }
 
         function hold(e){
-            tag.refs.knots.startShift();//save initial position of all the points
+            if(tag.resizable){
+                tag.refs.knots.startShift();//save initial position of all the points
+            }
             tag.setStartPosition(e);
 
             if(tag.draggable){
