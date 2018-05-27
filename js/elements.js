@@ -20,7 +20,7 @@ riot.tag2('r-path', '<path riot-d="{getPath()}" fill="rgba(100,200,200,0.2)" str
 });
 riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect> <g if="{resizable}" class="resize-handlers hide"> <circle class="resize-handler nw" ref="nw" data-handler="nw" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler n" ref="n" data-handler="n" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler ne" ref="ne" data-handler="ne" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler w" ref="w" data-handler="w" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler e" ref="e" data-handler="e" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler sw" ref="sw" data-handler="sw" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler s" ref="s" data-handler="s" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler se" ref="se" data-handler="se" onmousedown="{holdTheHandler}"></circle> </g>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; } r-rect .resize-handler,[data-is="r-rect"] .resize-handler{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; } r-rect .ne,[data-is="r-rect"] .ne{ cursor: nesw-resize} r-rect .n,[data-is="r-rect"] .n{ cursor: row-resize} r-rect .nw,[data-is="r-rect"] .nw{ cursor: nwse-resize} r-rect .e,[data-is="r-rect"] .e{ cursor: col-resize} r-rect .w,[data-is="r-rect"] .w{ cursor: col-resize} r-rect .se,[data-is="r-rect"] .se{ cursor: nwse-resize} r-rect .s,[data-is="r-rect"] .s{ cursor: row-resize} r-rect .sw,[data-is="r-rect"] .sw{ cursor: nesw-resize}', '', function(opts) {
         var tag = this;
-        tag.getParent = () => tag.parent || opts._parent;
+        tag.myParent = tag.parent || opts._parent;
         tag.diffX = 0;
         tag.diffY = 0;
         tag.dragStart = false;
@@ -45,6 +45,21 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         tag.resizable = ( opts.resizable || opts.resizable === "true");
 
         tag.on("mount", function(e) {
+            tag.myParent = tag.myParent || tag.parent || tag.root.parentNode;
+
+            if(tag.myParent){
+                if(tag.myParent.root){
+                    tag.offset = {
+                        x: tag.myParent.root.offsetLeft,
+                        y: tag.myParent.root.offsetTop,
+                    }
+                    tag.myParentNode = tag.myParent.root;
+                }else{
+
+                    tag.offset = tag.myParent.getBoundingClientRect();
+                    tag.myParentNode = tag.myParent;
+                }
+            }
             tag.refs.rect.setAttribute("x", opts.x);
             tag.refs.rect.setAttribute("y", opts.y);
             tag.refs.rect.setAttribute("width", tag.w);
@@ -99,8 +114,9 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             }
             if(tag.resizable){
                 dragHandler = tag[e.target.dataset.handler];
-                tag.getParent().root.addEventListener("mousemove", tag[e.target.dataset.handler] );
-                tag.getParent().root.addEventListener("mouseup", release);
+
+                tag.myParentNode.addEventListener("mousemove", tag[e.target.dataset.handler] );
+                tag.myParentNode.addEventListener("mouseup", release);
 
                 e.stopPropagation();
 
@@ -112,8 +128,8 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             var y = tag.initialState.y;
 
             var cursorOffset = {
-                x: cursor.x - tag.getParent().root.offsetLeft,
-                y: cursor.y - tag.getParent().root.offsetTop
+                x: cursor.x - tag.offset.x,
+                y: cursor.y - tag.offset.y
             }
             if (cursorOffset.x < x) {
                 x = cursorOffset.x;
@@ -165,8 +181,8 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             if(tag.draggable){
                 dragHandler = drag;
 
-                tag.getParent().root.addEventListener("mousemove", drag);
-                tag.getParent().root.addEventListener("mouseup", release);
+                tag.myParentNode.addEventListener("mousemove", drag);
+                tag.myParentNode.addEventListener("mouseup", release);
 
                 e.stopPropagation();
 
@@ -178,32 +194,35 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         }
 
         function release(e){
-            e.target.removeEventListener("mousemove", dragHandler);
-            e.target.removeEventListener("mouseup", release);
 
-            tag.getParent().root.removeEventListener("mousemove", dragHandler);
-            tag.getParent().root.removeEventListener("mouseup", release);
+            tag.myParentNode.removeEventListener("mousemove", dragHandler);
+            tag.myParentNode.removeEventListener("mouseup", release);
         }
 
 });
 riot.tag2('r-svg', '<svg ref="svgbox" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onmousedown="{createElement}"> <yield></yield> </svg>', '', '', function(opts) {
 
+        var currentTag;
         this.createElement = function(e){
             if(toolName === "r-rect"){
                 var tag = document.createElementNS("http://www.w3.org/2000/svg",'g');
                 this.refs.svgbox.appendChild(tag);
-                riot.mount(tag, "r-rect", {
+                currentTag = riot.mount(tag, "r-rect", {
                     _parent : this,
                     "data-is" : this,
                     x: e.x  - this.root.offsetLeft,
                     y: e.y  - this.root.offsetTop,
-                    width: 100,
-                    height: 100,
+                    width: 0,
+                    height: 0,
                     draggable : true,
                     resizable: true
                 });
                 this.root.addEventListener("mouseup", () => {toolName = "";} );
             }
+        }.bind(this)
+
+        this.dragToCreate = function(e){
+            currentTag.update(e.x, e.y);
         }.bind(this)
 
 });
