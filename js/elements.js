@@ -1,3 +1,49 @@
+riot.tag2('knot', '<circle ref="{keyName}" class="knot-style" each="{point,keyName in parent.points}" riot-cx="{point.x}" riot-cy="{point.y}" data-handler="{keyName}"></circle>', 'knot .knot-style,[data-is="knot"] .knot-style{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; cursor: pointer; }', '', function(opts) {
+        var svgBox,offset;
+        this.updateKnot = updateKnot;
+        this.move = move;
+        this.startMove = startMove;
+
+        function updateKnot(knotName, newXY){
+            this.refs[knotName].setAttribute("cx", newXY.x);
+            this.refs[knotName].setAttribute("cy", newXY.y);
+        }
+
+        function move( diffXY){
+
+            var keys = Object.keys(this.parent.points);
+            for(var i=0; i<keys.length; i++){
+                var point = this.parent.points[ keys[i] ];
+                point.x = this.initialState[  keys[i] ].x + diffXY.x;
+                point.y = this.initialState[  keys[i] ].y + diffXY.y;
+            }
+
+            this.update();
+        }
+
+        function startMove(){
+            this.initialState = JSON.parse(JSON.stringify( this.parent.points ));
+        }
+
+        this.on("mount", function() {
+
+        })
+
+        function pullStart(e){
+
+            svgbox.addEventListener("mousemove", pull );
+            svgbox.addEventListener("mouseup", pullStop );
+        }
+
+        function pull(e){
+
+        }
+
+        function pull(stop){
+            svgbox.removeEventListener("mousemove", pull );
+            svgbox.removeEventListener("mouseup", pullStop );
+        }
+});
 riot.tag2('r-path', '<path riot-d="{getPath()}" fill="rgba(100,200,200,0.2)" stroke="black"></path>', '', '', function(opts) {
         var height = 114;
         var width = 215;
@@ -18,7 +64,7 @@ riot.tag2('r-path', '<path riot-d="{getPath()}" fill="rgba(100,200,200,0.2)" str
                                 z`
         }
 });
-riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect> <g if="{resizable}" class="resize-handlers hide"> <circle class="resize-handler" ref="nw" data-handler="nw" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler" ref="ne" data-handler="ne" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler" ref="sw" data-handler="sw" onmousedown="{holdTheHandler}"></circle> <circle class="resize-handler" ref="se" data-handler="se" onmousedown="{holdTheHandler}"></circle> </g>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; } r-rect .resize-handler,[data-is="r-rect"] .resize-handler{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; cursor: pointer; }', '', function(opts) {
+riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect> <g ref="knots" if="{resizable}" class="resize-handlers hide" data-is="knot"> </g>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; } r-rect .resize-handler,[data-is="r-rect"] .resize-handler{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; cursor: pointer; }', '', function(opts) {
         var tag = this;
         tag.myParent = tag.parent || opts._parent;
         tag.diffX = 0;
@@ -37,6 +83,7 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         tag.y= Number.parseInt(opts.y);
         tag.w= Number.parseInt(opts.width);
         tag.h= Number.parseInt(opts.height);
+
         tag._name= opts.name;
         tag.updatePosition = updatePosition;
         tag.setStartPosition = setStartPosition;
@@ -75,17 +122,27 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         function setResizeHandlersPosition(){
             if(tag.resizable){
 
-                tag.refs.ne.setAttribute("cx", tag.x + tag.w);
-                tag.refs.ne.setAttribute("cy", tag.y);
+                tag.points = {
+                    "ne" : {
+                        x: tag.x + tag.w,
+                        y: tag.y
+                    },
+                    "sw" : {
+                        x: tag.x,
+                        y: tag.y + tag.h
+                    },
+                    "se" : {
+                        x: tag.x + tag.w,
+                        y: tag.y + tag.h
+                    },
+                    "nw" : {
+                        x: tag.x,
+                        y: tag.y
+                    }
+                };
 
-                tag.refs.se.setAttribute("cx", tag.x + tag.w);
-                tag.refs.se.setAttribute("cy", tag.y + tag.h);
+                tag.refs.knots.update();
 
-                tag.refs.nw.setAttribute("cx", tag.x);
-                tag.refs.nw.setAttribute("cy", tag.y);
-
-                tag.refs.sw.setAttribute("cx", tag.x);
-                tag.refs.sw.setAttribute("cy", tag.y + tag.h);
             }
         }
 
@@ -151,23 +208,36 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
 
         function updatePosition(cursor){
 
-            tag.x = (cursor.x - tag.diffX);
-            tag.y = (cursor.y - tag.diffY);
+            var diff = {
+                x:  cursor.x - tag.cursorStartPosition.x,
+                y: cursor.y - tag.cursorStartPosition.y
+            }
+
+            tag.x = tag.beforeStart.x + diff.x;
+            tag.y = tag.beforeStart.y + diff.y;
 
             tag.refs.rect.setAttribute("x", tag.x);
             tag.refs.rect.setAttribute("y", tag.y);
 
-            tag.setResizeHandlersPosition();
+            tag.refs.knots.move(diff);
 
         }
 
         function setStartPosition(cursor){
-            tag.diffX = cursor.x - tag.x;
-            tag.diffY = cursor.y - tag.y;
+            tag.beforeStart = {
+                x: tag.x,
+                y: tag.y
+            };
+            tag.cursorStartPosition = {
+                x: e.x,
+                y: e.y
+            };
         }
 
         function hold(e){
+            tag.refs.knots.startMove();
             tag.setStartPosition(e);
+
             if(tag.draggable){
                 dragHandler = drag;
 
@@ -175,7 +245,6 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
                 tag.myParentNode.addEventListener("mouseup", release);
 
                 e.stopPropagation();
-
             }
         }
 
@@ -184,7 +253,6 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         }
 
         function release(e){
-
             tag.myParentNode.removeEventListener("mousemove", dragHandler);
             tag.myParentNode.removeEventListener("mouseup", release);
         }

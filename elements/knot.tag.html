@@ -1,0 +1,71 @@
+<knot>
+    <style>
+        .knot-style{
+            fill: lavender;
+            fill-opacity: 0.5;
+            stroke: gray;
+            stroke-width: 1px;
+            vector-effect: non-scaling-stroke;
+            r: 5;
+            cursor: pointer; /* crosshair */
+        }
+    </style>
+
+    <circle ref={ keyName } class="knot-style" each={ point,keyName in parent.points } riot-cx={ point.x } riot-cy={ point.y } data-handler={ keyName }></circle>
+
+    <script>
+        var svgBox,offset;
+        this.updateKnot = updateKnot;
+        this.move = move;
+        this.startMove = startMove;
+        
+        function updateKnot(knotName, newXY){
+            this.refs[knotName].setAttribute("cx", newXY.x);
+            this.refs[knotName].setAttribute("cy", newXY.y);
+        }
+
+        
+        function move( diffXY){
+            
+            var keys = Object.keys(this.parent.points);
+            for(var i=0; i<keys.length; i++){
+                var point = this.parent.points[ keys[i] ];
+                point.x = this.initialState[  keys[i] ].x + diffXY.x;
+                point.y = this.initialState[  keys[i] ].y + diffXY.y;
+            }
+
+            this.update();
+        }
+
+        function startMove(){
+            this.initialState = JSON.parse(JSON.stringify( this.parent.points ));
+        }
+
+        this.on("mount", function() {
+            //this.root.firstChild //svg wrapper
+            //this.root.nearestViewportElement //parent SVG not the topmost
+            /* this.refs.knot.setAttribute("cx", opts.x);
+            this.refs.knot.setAttribute("cy", opts.y); */
+
+            /* svgbox = this.parent.root.nearestViewportElement
+            offset = svgbox.getBoundingClientRect();
+            svgbox.addEventListener("mousedown", pullStart ); */
+
+        })
+
+        function pullStart(e){
+
+            svgbox.addEventListener("mousemove", pull );
+            svgbox.addEventListener("mouseup", pullStop );
+        }
+
+        function pull(e){
+
+        }
+
+        function pull(stop){
+            svgbox.removeEventListener("mousemove", pull );
+            svgbox.removeEventListener("mouseup", pullStop );
+        }
+    </script>
+</knot>
