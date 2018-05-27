@@ -140,22 +140,12 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
 
         function positionKnots(){
             tag.points = {
-                "ne" : {
-                    x: tag.x + tag.w,
-                    y: tag.y
-                },
-                "sw" : {
-                    x: tag.x,
-                    y: tag.y + tag.h
-                },
+
                 "se" : {
                     x: tag.x + tag.w,
                     y: tag.y + tag.h
                 },
-                "nw" : {
-                    x: tag.x,
-                    y: tag.y
-                }
+
             };
 
             tag.refs.knots.update();
