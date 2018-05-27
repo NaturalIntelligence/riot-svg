@@ -88,19 +88,15 @@ riot.tag2('r-path', '<path riot-d="{getPath()}" fill="rgba(100,200,200,0.2)" str
                                 z`
         }
 });
-riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect> <g ref="knots" if="{resizable}" class="resize-handlers hide" data-is="knot"> </g>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; } r-rect .resize-handler,[data-is="r-rect"] .resize-handler{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; cursor: pointer; }', '', function(opts) {
+riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: draggable}"></rect> <g ref="knots" if="{resizable}" class="resize-handlers hide" data-is="knot"></g>', 'r-rect .draggable,[data-is="r-rect"] .draggable{ cursor: move; }', '', function(opts) {
         var tag = this;
         tag.myParent = tag.parent || opts._parent;
-        tag.diffX = 0;
-        tag.diffY = 0;
         tag.dragStart = false;
         tag.hold = hold;
         tag.drag = drag;
         tag.release = release;
 
         tag.initialState = {};
-
-        tag.selectRect = selectRect;
 
         tag.x= Number.parseInt(opts.x);
         tag.y= Number.parseInt(opts.y);
@@ -110,7 +106,6 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         tag._name= opts.name;
         tag.updatePosition = updatePosition;
         tag.setStartPosition = setStartPosition;
-        tag.setResizeHandlersPosition = setResizeHandlersPosition;
         tag.draggable = (opts.draggable || opts.draggable === "true");
         tag.resizable = ( opts.resizable || opts.resizable === "true");
 
@@ -138,39 +133,32 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             tag.refs.rect.setAttribute("height", tag.h);
             opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
             opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
-            tag.setResizeHandlersPosition();
-
+            if(tag.resizable){
+                positionKnots();
+            }
         })
 
-        function setResizeHandlersPosition(){
-            if(tag.resizable){
+        function positionKnots(){
+            tag.points = {
+                "ne" : {
+                    x: tag.x + tag.w,
+                    y: tag.y
+                },
+                "sw" : {
+                    x: tag.x,
+                    y: tag.y + tag.h
+                },
+                "se" : {
+                    x: tag.x + tag.w,
+                    y: tag.y + tag.h
+                },
+                "nw" : {
+                    x: tag.x,
+                    y: tag.y
+                }
+            };
 
-                tag.points = {
-                    "ne" : {
-                        x: tag.x + tag.w,
-                        y: tag.y
-                    },
-                    "sw" : {
-                        x: tag.x,
-                        y: tag.y + tag.h
-                    },
-                    "se" : {
-                        x: tag.x + tag.w,
-                        y: tag.y + tag.h
-                    },
-                    "nw" : {
-                        x: tag.x,
-                        y: tag.y
-                    }
-                };
-
-                tag.refs.knots.update();
-
-            }
-        }
-
-        function selectRect(e){
-
+            tag.refs.knots.update();
         }
 
         var dragHandler;
