@@ -29,9 +29,6 @@
         tag.resizable = ( opts.resizable || opts.resizable === "true");
 
         tag.on("mount", function(e) {
-            if(tag.resizable && tag.myParentSVGNode){
-                    tag.refs.knots.setParent();
-            }
             tag.refs.rect.setAttribute("x", opts.x);
             tag.refs.rect.setAttribute("y", opts.y);
             tag.refs.rect.setAttribute("width", tag.w);
@@ -149,12 +146,16 @@
             el.setAttribute("height", state.h);
         }
 
+        function movement(start, end){
+            return {
+                x:  start.x - end.x,
+                y: start.y - end.y
+            };
+        }
+
         function updatePosition(cursor){
             //TODO: if keepWithIn is set then check if it is going out of container.
-            var diff = {
-                x:  cursor.x - tag.cursorStartPosition.x,
-                y: cursor.y - tag.cursorStartPosition.y
-            }
+            var diff = movement(cursor,tag.cursorStartPosition);
             
             tag.x = tag.beforeStart.x + diff.x;
             tag.y = tag.beforeStart.y + diff.y;
@@ -199,7 +200,7 @@
             tag.updatePosition(e);
         }
 
-        function release(e){
+        function release(e){//releasing drag event
             tag.myParentSVGNode.removeEventListener("mousemove", dragHandler);
             tag.myParentSVGNode.removeEventListener("mouseup", release);
         }

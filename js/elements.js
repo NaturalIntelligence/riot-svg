@@ -1,78 +1,67 @@
 riot.tag2('knot', '<circle ref="{keyName}" class="knot-style" each="{point,keyName in parent.points}" riot-cx="{point.x}" riot-cy="{point.y}" data-handler="{keyName}" onmousedown="{pullStart}"></circle>', 'knot .knot-style,[data-is="knot"] .knot-style{ fill: lavender; fill-opacity: 0.5; stroke: gray; stroke-width: 1px; vector-effect: non-scaling-stroke; r: 5; cursor: pointer; }', '', function(opts) {
         var tag = this;
         var polygon = tag.parent;
-        var svgBox,offset;
-
-        this.updateKnot = updateKnot;
-        this.shift = shift;
-        this.startShift = startShift;
 
         this.on("mount", function() {
-
+            if(this.parent.myParentSVGNode) tag.svgbox = this.parent.myParentSVGNode;
         });
 
-        tag.setParent = function(){
-            svgbox = this.parent.myParentSVGNode;
-        }
-
-        function updateKnot(knotName, newXY){
+        tag.updateKnot = function(knotName, newXY){
             tag.refs[knotName].setAttribute("cx", newXY.x);
             tag.refs[knotName].setAttribute("cy", newXY.y);
         }
 
-        function updatePoint(knotName, newXY){
-            tag.parent.points[knotName].x = newXY.x;
-            tag.parent.points[knotName].y = newXY.y;
+        tag.updatePoint = function(knotName, newXY){
+            polygon.points[knotName].x = newXY.x;
+            polygon.points[knotName].y = newXY.y;
         }
 
-        function shift( diffXY){
-            var keys = Object.keys(this.parent.points);
+        tag.shift = function( diffXY){
+            var keys = Object.keys(polygon.points);
             for(var i=0; i<keys.length; i++){
                 var point = {
-                    x : this.initialState[  keys[i] ].x + diffXY.x,
-                    y : this.initialState[  keys[i] ].y + diffXY.y
+                    x : tag.initialState[  keys[i] ].x + diffXY.x,
+                    y : tag.initialState[  keys[i] ].y + diffXY.y
                 }
-                this.parent.points[ keys[i] ].x = point.x;
-                this.parent.points[ keys[i] ].y = point.y;
+                polygon.points[ keys[i] ].x = point.x;
+                polygon.points[ keys[i] ].y = point.y;
             }
             tag.update();
         }
 
-        function startShift(){
-            this.initialState = clone( this.parent.points );
+        tag.startShift = function(){
+            this.initialState = clone( polygon.points );
         }
 
         var knotInitialState;
         var selectedKnotId;
 
         tag.pullStart = (e) => {
-            if(!svgbox) tag.setParent();
             selectedKnotId = e.target.dataset.handler;
             knotInitialState = clone( polygon.points[ selectedKnotId ] );
             polygon.moveStart( selectedKnotId );
 
-            tag.parent.myParentSVGNode.addEventListener("mousemove", tag.pull );
-            tag.parent.myParentSVGNode.addEventListener("mouseup", tag.pullStop );
-
+            tag.svgbox.addEventListener("mousemove", tag.pull );
+            tag.svgbox.addEventListener("mouseup", tag.pullStop );
         }
 
         tag.pull = (e) => {
             polygon.move(e);
-            updateKnot(selectedKnotId, {
-                x: e.x - this.parent.myParentSVGNode.getBoundingClientRect().x,
-                y: e.y - this.parent.myParentSVGNode.getBoundingClientRect().y
-            })
+            tag.updateKnot( selectedKnotId,movement( e, tag.svgbox.getBoundingClientRect() ) );
         }
 
         tag.pullStop = (e) => {
-            console.log("pull stop")
-            updatePoint(selectedKnotId,{
-                x: e.x - this.parent.myParentSVGNode.getBoundingClientRect().x,
-                y: e.y - this.parent.myParentSVGNode.getBoundingClientRect().y
-            })
+            tag.updatePoint( selectedKnotId,movement( e, tag.svgbox.getBoundingClientRect() ) );
             polygon.moveStop();
-            tag.parent.myParentSVGNode.removeEventListener("mousemove", tag.pull );
-            tag.parent.myParentSVGNode.removeEventListener("mouseup", tag.pullStop );
+            tag.svgbox.removeEventListener("mousemove", tag.pull );
+            tag.svgbox.removeEventListener("mouseup", tag.pullStop );
+        }
+
+        function movement(start,end){
+            return {
+                x: start.x - end.x,
+                y: start.y - end.y
+            }
         }
 
         function clone(obj){
@@ -121,9 +110,6 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         tag.resizable = ( opts.resizable || opts.resizable === "true");
 
         tag.on("mount", function(e) {
-            if(tag.resizable && tag.myParentSVGNode){
-                    tag.refs.knots.setParent();
-            }
             tag.refs.rect.setAttribute("x", opts.x);
             tag.refs.rect.setAttribute("y", opts.y);
             tag.refs.rect.setAttribute("width", tag.w);
@@ -228,12 +214,16 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
             el.setAttribute("height", state.h);
         }
 
+        function movement(start, end){
+            return {
+                x:  start.x - end.x,
+                y: start.y - end.y
+            };
+        }
+
         function updatePosition(cursor){
 
-            var diff = {
-                x:  cursor.x - tag.cursorStartPosition.x,
-                y: cursor.y - tag.cursorStartPosition.y
-            }
+            var diff = movement(cursor,tag.cursorStartPosition);
 
             tag.x = tag.beforeStart.x + diff.x;
             tag.y = tag.beforeStart.y + diff.y;
