@@ -22,20 +22,28 @@
         this.shift = shift;
         this.startShift = startShift;
 
-        this.pullStart = pullStart;
-        this.pull = pull;
-        this.pullStop = pullStop;
-        
         this.on("mount", function() {
             //this.root.firstChild //svg wrapper
             //this.root.nearestViewportElement //parent SVG not the topmost
 
-            if(this.parent && this.parent.root.nearestViewportElement){
-                svgbox = this.parent.root.nearestViewportElement;
-                offset = svgbox.getBoundingClientRect();
+            /* if(this.parent.myParentNode){
+                svgbox = this.parent.myParentNode;
+            }else{
+                if(this.parent.root.parentNode){
+                    svgbox = this.parent.root.parentNode.nearestViewportElement;
+                }
             }
 
-        })
+            if(svgbox)  offset = svgbox.getBoundingClientRect(); */
+        });
+        
+        tag.setParent = function(){
+            if(this.parent.myParentSVGNode){
+                svgbox = this.parent.myParentSVGNode;
+                offset = this.parent.myParentSVGNode.getBoundingClientRect();
+                //console.log(1, svgbox);
+            }
+        }
 
         function updateKnot(knotName, newXY){
             tag.refs[knotName].setAttribute("cx", newXY.x);
@@ -62,26 +70,31 @@
         var knotInitialState;
         var selectedKnotId;
 
-        function pullStart(e){
+        tag.pullStart = (e) => {
+            if(!svgbox) tag.setParent();
             selectedKnotId = e.target.dataset.handler;
             knotInitialState = clone( polygon.points[ selectedKnotId ] );
             polygon.moveStart( selectedKnotId );
-            svgbox.addEventListener("mousemove", pull );
-            svgbox.addEventListener("mouseup", pullStop );
+            
+            tag.parent.myParentSVGNode.addEventListener("mousemove", tag.pull );
+            tag.parent.myParentSVGNode.addEventListener("mouseup", tag.pullStop );
+
+            /* svgbox.addEventListener("mousemove", pull );
+            svgbox.addEventListener("mouseup", pullStop ); */
         }
 
-        function pull(e){
+        tag.pull = (e) => {
             polygon.move(e);
             updateKnot(selectedKnotId, {
-                x: e.x - offset.x,
-                y: e.y - offset.y
+                x: e.x - this.parent.myParentSVGNode.getBoundingClientRect().x,
+                y: e.y - this.parent.myParentSVGNode.getBoundingClientRect().y
             })
         }
 
-        function pullStop(e){
+        tag.pullStop = (e) => {
             polygon.moveStop();
-            svgbox.removeEventListener("mousemove", pull );
-            svgbox.removeEventListener("mouseup", pullStop );
+            tag.parent.myParentSVGNode.removeEventListener("mousemove", tag.pull );
+            tag.parent.myParentSVGNode.removeEventListener("mouseup", tag.pullStop );
         }
 
 

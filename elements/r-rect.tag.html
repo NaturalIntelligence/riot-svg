@@ -29,22 +29,8 @@
         tag.resizable = ( opts.resizable || opts.resizable === "true");
 
         tag.on("mount", function(e) {
-            tag.myParent = tag.myParent || tag.parent || tag.root.parentNode;
-
-            if(tag.myParent){
-                if(tag.myParent.root){
-                    tag.offset = {
-                        x: tag.myParent.root.offsetLeft,
-                        y: tag.myParent.root.offsetTop,
-                    }
-                    tag.myParentNode = tag.myParent.root;
-                }else{
-                    if(tag.myParent.tagName === "g"){
-                        tag.myParent = tag.myParent.nearestViewportElement;
-                    }
-                    tag.offset = tag.myParent.getBoundingClientRect();
-                    tag.myParentNode = tag.myParent;
-                }
+            if(tag.resizable){
+                    tag.refs.knots.setParent();
             }
             tag.refs.rect.setAttribute("x", opts.x);
             tag.refs.rect.setAttribute("y", opts.y);
@@ -55,6 +41,34 @@
             if(tag.resizable){
                 positionKnots();
             }
+
+        });
+        tag.on("before-mount", function(e) {
+            var id = Math.random(0,10000) * 10000;
+            if(tag.myParent && tag.myParent.tagName === "R-SVG"){//riot SVG 
+                tag.myParentSVGNode = tag.parent.firstElementChild;//it is not gonna call
+            }else {// HTML SVG
+                if(tag.root.parentNode){
+                    if(tag.root.parentNode.tagName.toLowerCase() === "g"){
+                        tag.myParentSVGNode = tag.root.parentNode.nearestViewportElement; //svg node
+                    }else{
+                        tag.myParentSVGNode = tag.root.parentNode; //svg node
+                    }
+                }else{
+                    //do nothing
+                    //yield mounts child tag twice https://github.com/riot/riot/issues/1766
+                }
+            }
+
+            /* tag.refs.rect.setAttribute("x", opts.x);
+            tag.refs.rect.setAttribute("y", opts.y);
+            tag.refs.rect.setAttribute("width", tag.w);
+            tag.refs.rect.setAttribute("height", tag.h);
+            opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
+            opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
+            if(tag.resizable){
+                positionKnots();
+            } */
         })
 
         function positionKnots(){
@@ -90,8 +104,17 @@
                 h : tag.h
             };
             dragHandler = tag[knotName];
+            //update offset as the position of the SVG box might be changed with many reasons
+            tag.updateOffset();
         }
 
+        tag.updateOffset = function(){
+            if(tag.myParentSVGNode.tagName === "R-SVG"){
+                tag.offset = tag.myParentSVGNode.firstElementChild.getBoundingClientRect();
+            }else{
+                tag.offset = tag.myParentSVGNode.getBoundingClientRect();
+            }
+        }
         tag.move = ( cursor ) =>{
             dragHandler && dragHandler(cursor);
         }
@@ -176,8 +199,8 @@
             if(tag.draggable){
                 dragHandler = drag;
 
-                tag.myParentNode.addEventListener("mousemove", drag);
-                tag.myParentNode.addEventListener("mouseup", release);
+                tag.myParentSVGNode.addEventListener("mousemove", drag);
+                tag.myParentSVGNode.addEventListener("mouseup", release);
 
                 e.stopPropagation();
             }
@@ -188,8 +211,8 @@
         }
 
         function release(e){
-            tag.myParentNode.removeEventListener("mousemove", dragHandler);
-            tag.myParentNode.removeEventListener("mouseup", release);
+            tag.myParentSVGNode.removeEventListener("mousemove", dragHandler);
+            tag.myParentSVGNode.removeEventListener("mouseup", release);
         }
 
         /*
