@@ -29,7 +29,7 @@
         tag.resizable = ( opts.resizable || opts.resizable === "true");
 
         tag.on("mount", function(e) {
-            if(tag.resizable){
+            if(tag.resizable && tag.myParentSVGNode){
                     tag.refs.knots.setParent();
             }
             tag.refs.rect.setAttribute("x", opts.x);
@@ -44,7 +44,6 @@
 
         });
         tag.on("before-mount", function(e) {
-            var id = Math.random(0,10000) * 10000;
             if(tag.myParent && tag.myParent.tagName === "R-SVG"){//riot SVG 
                 tag.myParentSVGNode = tag.parent.firstElementChild;//it is not gonna call
             }else {// HTML SVG
@@ -59,16 +58,6 @@
                     //yield mounts child tag twice https://github.com/riot/riot/issues/1766
                 }
             }
-
-            /* tag.refs.rect.setAttribute("x", opts.x);
-            tag.refs.rect.setAttribute("y", opts.y);
-            tag.refs.rect.setAttribute("width", tag.w);
-            tag.refs.rect.setAttribute("height", tag.h);
-            opts.rx && (tag.refs.rect.setAttribute("rx", opts.rx) );
-            opts.ry && (tag.refs.rect.setAttribute("ry", opts.ry) );
-            if(tag.resizable){
-                positionKnots();
-            } */
         })
 
         function positionKnots(){

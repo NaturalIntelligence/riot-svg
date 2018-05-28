@@ -12,11 +12,7 @@ riot.tag2('knot', '<circle ref="{keyName}" class="knot-style" each="{point,keyNa
         });
 
         tag.setParent = function(){
-            if(this.parent.myParentSVGNode){
-                svgbox = this.parent.myParentSVGNode;
-                offset = this.parent.myParentSVGNode.getBoundingClientRect();
-
-            }
+            svgbox = this.parent.myParentSVGNode;
         }
 
         function updateKnot(knotName, newXY){
@@ -24,14 +20,22 @@ riot.tag2('knot', '<circle ref="{keyName}" class="knot-style" each="{point,keyNa
             tag.refs[knotName].setAttribute("cy", newXY.y);
         }
 
+        function updatePoint(knotName, newXY){
+            tag.parent.points[knotName].x = newXY.x;
+            tag.parent.points[knotName].y = newXY.y;
+        }
+
         function shift( diffXY){
             var keys = Object.keys(this.parent.points);
             for(var i=0; i<keys.length; i++){
-                var point = this.parent.points[ keys[i] ];
-                point.x = this.initialState[  keys[i] ].x + diffXY.x;
-                point.y = this.initialState[  keys[i] ].y + diffXY.y;
+                var point = {
+                    x : this.initialState[  keys[i] ].x + diffXY.x,
+                    y : this.initialState[  keys[i] ].y + diffXY.y
+                }
+                this.parent.points[ keys[i] ].x = point.x;
+                this.parent.points[ keys[i] ].y = point.y;
             }
-            this.update();
+            tag.update();
         }
 
         function startShift(){
@@ -61,6 +65,11 @@ riot.tag2('knot', '<circle ref="{keyName}" class="knot-style" each="{point,keyNa
         }
 
         tag.pullStop = (e) => {
+            console.log("pull stop")
+            updatePoint(selectedKnotId,{
+                x: e.x - this.parent.myParentSVGNode.getBoundingClientRect().x,
+                y: e.y - this.parent.myParentSVGNode.getBoundingClientRect().y
+            })
             polygon.moveStop();
             tag.parent.myParentSVGNode.removeEventListener("mousemove", tag.pull );
             tag.parent.myParentSVGNode.removeEventListener("mouseup", tag.pullStop );
@@ -112,7 +121,7 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
         tag.resizable = ( opts.resizable || opts.resizable === "true");
 
         tag.on("mount", function(e) {
-            if(tag.resizable){
+            if(tag.resizable && tag.myParentSVGNode){
                     tag.refs.knots.setParent();
             }
             tag.refs.rect.setAttribute("x", opts.x);
@@ -127,7 +136,6 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
 
         });
         tag.on("before-mount", function(e) {
-            var id = Math.random(0,10000) * 10000;
             if(tag.myParent && tag.myParent.tagName === "R-SVG"){
                 tag.myParentSVGNode = tag.parent.firstElementChild;
             }else {
@@ -141,7 +149,6 @@ riot.tag2('r-rect', '<rect ref="rect" onmousedown="{hold}" class="{draggable: dr
 
                 }
             }
-
         })
 
         function positionKnots(){

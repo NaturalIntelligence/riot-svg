@@ -38,16 +38,17 @@
         });
         
         tag.setParent = function(){
-            if(this.parent.myParentSVGNode){
-                svgbox = this.parent.myParentSVGNode;
-                offset = this.parent.myParentSVGNode.getBoundingClientRect();
-                //console.log(1, svgbox);
-            }
+            svgbox = this.parent.myParentSVGNode;
         }
 
         function updateKnot(knotName, newXY){
             tag.refs[knotName].setAttribute("cx", newXY.x);
             tag.refs[knotName].setAttribute("cy", newXY.y);
+        }
+
+        function updatePoint(knotName, newXY){
+            tag.parent.points[knotName].x = newXY.x;
+            tag.parent.points[knotName].y = newXY.y;
         }
 
         /**
@@ -56,11 +57,14 @@
         function shift( diffXY){
             var keys = Object.keys(this.parent.points);
             for(var i=0; i<keys.length; i++){
-                var point = this.parent.points[ keys[i] ];
-                point.x = this.initialState[  keys[i] ].x + diffXY.x;
-                point.y = this.initialState[  keys[i] ].y + diffXY.y;
+                var point = {
+                    x : this.initialState[  keys[i] ].x + diffXY.x,
+                    y : this.initialState[  keys[i] ].y + diffXY.y
+                }
+                this.parent.points[ keys[i] ].x = point.x;
+                this.parent.points[ keys[i] ].y = point.y;
             }
-            this.update();
+            tag.update();
         }
 
         function startShift(){
@@ -92,6 +96,11 @@
         }
 
         tag.pullStop = (e) => {
+            console.log("pull stop")
+            updatePoint(selectedKnotId,{
+                x: e.x - this.parent.myParentSVGNode.getBoundingClientRect().x,
+                y: e.y - this.parent.myParentSVGNode.getBoundingClientRect().y
+            })
             polygon.moveStop();
             tag.parent.myParentSVGNode.removeEventListener("mousemove", tag.pull );
             tag.parent.myParentSVGNode.removeEventListener("mouseup", tag.pullStop );
